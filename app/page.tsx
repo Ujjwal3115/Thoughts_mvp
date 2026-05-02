@@ -11,16 +11,44 @@ export default function Home() {
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
-  
-  // NEW: State to hold our failed audio blob
   const [pendingAudio, setPendingAudio] = useState<Blob | null>(null);
 
-  const handleSaveEntry = async () => { /* ... keeps existing text save logic ... */ };
+  const handleSaveEntry = async () => {
+    const trimmedContent = content.trim();
 
-  // UPDATED: Audio Processing with Fallback Logic
+    if (!trimmedContent || isSubmitting || isProcessingAudio) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/ingest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: trimmedContent,
+          modality: "text",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
+
+      setContent("");
+    } catch (error) {
+      console.error("Failed to save entry:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAudioProcessing = async (audioBlob: Blob) => {
     setIsProcessingAudio(true);
-    setPendingAudio(null); // Clear any old pending errors
+    setPendingAudio(null);
     
     try {
       const formData = new FormData();
@@ -32,7 +60,6 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        // If we get a 503 or any error, throw it so the catch block triggers
         throw new Error(`Server returned ${response.status}`);
       }
       
@@ -40,7 +67,6 @@ export default function Home() {
       
     } catch (error) {
       console.error("Failed to process audio:", error);
-      // THE MAGIC: Instead of losing the data, we save it to our "Queue"
       setPendingAudio(audioBlob);
     } finally {
       setIsProcessingAudio(false);
@@ -60,7 +86,6 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col justify-end pb-4 space-y-4">
         
-        {/* NEW: The Graceful Degradation UI Banner */}
         {pendingAudio && (
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4 flex items-center justify-between animate-in fade-in slide-in-from-bottom-2">
             <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
@@ -110,7 +135,8 @@ export default function Home() {
               disabled={isSubmitting || !content.trim() || isProcessingAudio}
               className="rounded-full px-6 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
             >
-               {isSubmitting ? 'Saving...' : 'Save Entry'}
+               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+               {isSubmitting ? "Saving..." : "Save Entry"}
             </Button>
           </CardFooter>
         </Card>
