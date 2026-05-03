@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Lora } from "next/font/google";
+import { Outfit, Lora, Special_Elite } from "next/font/google";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -12,9 +12,15 @@ const lora = Lora({
   variable: "--font-lora",
 });
 
+const specialElite = Special_Elite({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-sketch",
+});
+
 export const metadata: Metadata = {
-  title: "Thoughts | Your Cognitive Mirror",
-  description: "A personalized AI diary.",
+  title: "Thoughts | Your path to emotional balance.",
+  description: "A personalized AI diary that understands your emotions. Write, speak, and visualize your mental wellness journey.",
 };
 
 export default function RootLayout({
@@ -25,12 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${outfit.variable} ${lora.variable} font-sans antialiased`}
+        className={`${outfit.variable} ${lora.variable} ${specialElite.variable} antialiased`}
+        style={{ fontFamily: "'Courier New', 'Courier', monospace" }}
       >
-        {/* We wrap everything in a max-w-3xl to keep the UI intimate and not stretched out */}
-        <main className="max-w-3xl mx-auto min-h-screen px-6 py-12">
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );

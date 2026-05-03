@@ -1,146 +1,135 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Send, Loader2, AlertCircle, RefreshCw } from "lucide-react" // Added new icons
-import VoiceRecorder from "@/components/features/VoiceRecorder"
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { PageDecorations, Smiley, Starburst, Heart, DoodleBook } from "@/components/ui/Decorations"
 
-export default function Home() {
-  const [content, setContent] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isProcessingAudio, setIsProcessingAudio] = useState(false);
-  const [pendingAudio, setPendingAudio] = useState<Blob | null>(null);
+export default function LandingPage() {
+  const [isVisible, setIsVisible] = useState(false)
 
-  const handleSaveEntry = async () => {
-    const trimmedContent = content.trim();
-
-    if (!trimmedContent || isSubmitting || isProcessingAudio) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/ingest", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: trimmedContent,
-          modality: "text",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
-
-      setContent("");
-    } catch (error) {
-      console.error("Failed to save entry:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleAudioProcessing = async (audioBlob: Blob) => {
-    setIsProcessingAudio(true);
-    setPendingAudio(null);
-    
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'audio.webm');
-
-      const response = await fetch('/api/ingest/audio', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
-      
-      console.log("Voice entry saved successfully!");
-      
-    } catch (error) {
-      console.error("Failed to process audio:", error);
-      setPendingAudio(audioBlob);
-    } finally {
-      setIsProcessingAudio(false);
-    }
-  };
+  useEffect(() => {
+    setIsVisible(true)
+  }, [])
 
   return (
-    <div className="flex flex-col h-[80vh] justify-between">
-      <header className="mb-8">
-        <h1 className="text-3xl font-medium tracking-tight text-foreground mb-2">
-          Good evening, Ujjwal.
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          What is on your mind today?
-        </p>
-      </header>
+    <div 
+      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
+      style={{ background: 'var(--color-pink-bg)' }}
+    >
+      {/* Scattered decorative elements */}
+      <PageDecorations />
 
-      <div className="flex-1 flex flex-col justify-end pb-4 space-y-4">
+      {/* Main content container */}
+      <div className="relative z-10 flex flex-col items-center gap-8 px-4">
         
-        {pendingAudio && (
-          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4 flex items-center justify-between animate-in fade-in slide-in-from-bottom-2">
-            <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
-              <AlertCircle className="h-5 w-5" />
-              <div className="text-sm">
-                <p className="font-medium">Network congested</p>
-                <p className="opacity-80">Your voice thought is saved securely on your device.</p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => handleAudioProcessing(pendingAudio)}
-              disabled={isProcessingAudio}
-              className="border-amber-300 text-amber-700 hover:bg-amber-100"
-            >
-              {isProcessingAudio ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-              Retry Sync
-            </Button>
-          </div>
-        )}
+        {/* Smiley above logo */}
+        <div 
+          className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}
+          style={{ transitionDelay: '200ms' }}
+        >
+          <Smiley size={48} />
+        </div>
 
-        <Card className="shadow-sm shadow-slate-200/50 dark:shadow-none border-muted/50 overflow-hidden">
-          <CardContent className="p-0">
-            <Textarea 
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Start typing, or tap the mic to speak..." 
-              className="min-h-[200px] border-0 focus-visible:ring-0 resize-none text-lg p-6 font-serif leading-relaxed bg-transparent"
-              disabled={isProcessingAudio}
-            />
-          </CardContent>
-          
-          <CardFooter className="flex justify-between items-center bg-muted/30 px-4 py-3 border-t border-muted/50">
-            
-            {isProcessingAudio ? (
-               <div className="flex items-center gap-2 text-primary font-medium">
-                 <Loader2 className="h-5 w-5 animate-spin" />
-                 <span>Processing voice...</span>
-               </div>
-            ) : (
-              <VoiceRecorder onAudioReady={handleAudioProcessing} />
-            )}
-            
-            <Button 
-              onClick={handleSaveEntry}
-              disabled={isSubmitting || !content.trim() || isProcessingAudio}
-              className="rounded-full px-6 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
-            >
-               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-               {isSubmitting ? "Saving..." : "Save Entry"}
-            </Button>
-          </CardFooter>
-        </Card>
+        {/* Logo Box - Big "Thoughts" in a sketch box */}
+        <div 
+          className={`sketch-box-thick px-12 py-6 transition-all duration-700 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
+          style={{ transitionDelay: '0ms' }}
+        >
+          <h1 
+            className="text-5xl md:text-7xl font-bold tracking-tight"
+            style={{ fontFamily: "var(--font-sketch, 'Courier New', monospace)" }}
+          >
+            Thoughts
+          </h1>
+        </div>
+
+        {/* Tagline */}
+        <p 
+          className={`text-lg md:text-xl text-foreground/80 italic transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+          style={{ 
+            fontFamily: "var(--font-sketch, 'Courier New', monospace)",
+            transitionDelay: '400ms'
+          }}
+        >
+          &quot;Your path to emotional balance.&quot;
+        </p>
+
+        {/* CTA Buttons */}
+        <div 
+          className={`flex flex-col sm:flex-row items-center gap-4 mt-4 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+          style={{ transitionDelay: '600ms' }}
+        >
+          <Link href="/diary" style={{ textDecoration: 'none' }}>
+            <button className="sketch-btn text-lg px-10 py-4 flex items-center gap-3">
+              <DoodleBook size={28} />
+              <span>Start Writing</span>
+            </button>
+          </Link>
+
+          <Link href="/mood" style={{ textDecoration: 'none' }}>
+            <button className="sketch-btn-outline text-base px-8 py-3 flex items-center gap-2">
+              📊 View My Mood
+            </button>
+          </Link>
+        </div>
+
+        {/* Features preview */}
+        <div 
+          className={`grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 max-w-3xl transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          style={{ transitionDelay: '800ms' }}
+        >
+          <FeatureCard
+            icon="✍️"
+            title="Write Freely"
+            description="Pour your thoughts into your personal digital diary"
+          />
+          <FeatureCard
+            icon="🎙️"
+            title="Speak Your Mind"
+            description="Record voice entries when typing feels like too much"
+          />
+          <FeatureCard
+            icon="📈"
+            title="Track Your Mood"
+            description="AI analyzes your emotions and shows you patterns over time"
+          />
+        </div>
+
+        {/* Decorative hearts at bottom */}
+        <div 
+          className={`flex items-center gap-3 mt-6 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+          style={{ transitionDelay: '1000ms' }}
+        >
+          <Heart size={16} color="#FF8A80" />
+          <span 
+            className="text-xs text-foreground/50"
+            style={{ fontFamily: "'Courier New', monospace" }}
+          >
+            made with care for your mental wellness
+          </span>
+          <Heart size={16} color="#FF8A80" />
+        </div>
       </div>
     </div>
-  );
+  )
+}
+
+function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+  return (
+    <div className="sketch-box-thin p-5 text-center hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_#1a1a1a] transition-all duration-200">
+      <div className="text-3xl mb-3">{icon}</div>
+      <h3 
+        className="text-sm font-bold mb-2"
+        style={{ fontFamily: "'Courier New', monospace" }}
+      >
+        {title}
+      </h3>
+      <p 
+        className="text-xs text-foreground/60 leading-relaxed"
+        style={{ fontFamily: "'Courier New', monospace" }}
+      >
+        {description}
+      </p>
+    </div>
+  )
 }
